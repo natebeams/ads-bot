@@ -1,22 +1,19 @@
+require('dotenv').config();
 const { REST, Routes } = require('discord.js');
 
-const TOKEN = process.env.TOKEN;
-const CLIENT_ID = "1481154081107218547";
-
-const rest = new REST({ version: '10' }).setToken(TOKEN);
+const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
 (async () => {
-    try {
-        console.log("Clearing GLOBAL commands...");
+	try {
+		console.log('Clearing global commands...');
 
-        await rest.put(
-            Routes.applicationCommands(CLIENT_ID),
-            { body: [] }
-        );
+		await rest.put(
+			Routes.applicationCommands(process.env.CLIENT_ID),
+			{ body: [] }
+		);
 
-        console.log("Global commands cleared.");
-
-    } catch (error) {
-        console.error(error);
-    }
+		console.log('Global commands cleared.');
+	} catch (error) {
+		console.error(error);
+	}
 })();

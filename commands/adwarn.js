@@ -2,20 +2,18 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const checkPerms = require('../checkPerms');
 const fs = require('fs');
 
-const MOD_LOG_CHANNEL = "1481114583543316511"; // replace with your log channel ID
-
 module.exports = {
 data: new SlashCommandBuilder()
 .setName('adwarn')
 .setDescription('Warn a user for advertising')
 .addUserOption(option =>
 option.setName('user')
-.setDescription('User to warn for advertising')
+.setDescription('User to warn')
 .setRequired(true)
 )
 .addStringOption(option =>
 option.setName('reason')
-.setDescription('Reason for the ad warning')
+.setDescription('Reason for the warning')
 .setRequired(false)
 ),
 
@@ -29,9 +27,9 @@ ephemeral: true
 }
 
 const user = interaction.options.getUser('user');
-const reason = interaction.options.getString('reason') || "Advertising violation";
+const reason = interaction.options.getString('reason') || "Advertising";
 
-let db = JSON.parse(fs.readFileSync('./database.json'));
+let db = JSON.parse(fs.readFileSync('./database.json','utf8'));
 
 if(!db.adwarns) db.adwarns = {};
 if(!db.adwarns[user.id]) db.adwarns[user.id] = 0;
@@ -41,38 +39,22 @@ db.adwarns[user.id]++;
 fs.writeFileSync('./database.json', JSON.stringify(db, null, 2));
 
 const embed = new EmbedBuilder()
-.setColor("#1b2df0")
-.setTitle("📢 Advertising Warning")
-.setDescription(`${user.tag} has been **warned for advertising**.`)
+.setColor("#ff2e2e")
+.setTitle("<:StaffBadgeRed:1481520734382719111> Klien Advertising Moderation Action")
+.setDescription("Advertisement deleted")
 .addFields(
-{ name: "Reason", value: reason },
-{ name: "Total Ad Warns", value: `${db.adwarns[user.id]}`, inline: true }
+{ name: "・Username:", value: `<@${user.id}>`, inline: false },
+{ name: "・Channel:", value: `<#${interaction.channel.id}>`, inline: false },
+{ name: "・Reason:", value: reason, inline: false },
+{ name: "・Issued By:", value: `<@${interaction.user.id}>`, inline: false }
 )
+.setFooter({ text: "If you wish to appeal this warning, Please open a ticket in support" })
 .setTimestamp();
 
-await interaction.reply({ embeds: [embed] });
-
-/* ---------- MOD LOG ---------- */
-
-const logChannel = interaction.guild.channels.cache.get(MOD_LOG_CHANNEL);
-
-if (logChannel) {
-
-const logEmbed = new EmbedBuilder()
-.setColor("#FF2E2E")
-.setTitle("🚨 Moderation Action")
-.addFields(
-{ name: "User", value: `${user.tag} (${user.id})` },
-{ name: "Moderator", value: `${interaction.user.tag}` },
-{ name: "Action", value: "Ad Warn", inline: true },
-{ name: "Reason", value: reason },
-{ name: "Total Ad Warns", value: `${db.adwarns[user.id]}`, inline: true }
-)
-.setTimestamp();
-
-logChannel.send({ embeds: [logEmbed] });
-
-}
+await interaction.reply({
+content: `<@${user.id}>`,
+embeds: [embed]
+});
 
 }
 };

@@ -23,7 +23,7 @@ ephemeral: true
 
 const user = interaction.options.getUser('user');
 
-let db = JSON.parse(fs.readFileSync('./database.json'));
+JSON.parse(fs.readFileSync('./database.json', 'utf8'))
 
 if(!db.adwarns) db.adwarns = {};
 

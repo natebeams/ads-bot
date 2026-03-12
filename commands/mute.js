@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const checkPerms = require('../checkPerms');
 
-const MOD_LOG_CHANNEL = "1481114583543316511"; // replace with your log channel ID
+const MOD_LOG_CHANNEL = "1481114583543316511";
 
 module.exports = {
 data: new SlashCommandBuilder()
@@ -33,12 +33,27 @@ ephemeral: true
 }
 
 const user = interaction.options.getUser('user');
-const member = interaction.guild.members.cache.get(user.id);
+const member = await interaction.guild.members.fetch(user.id);
+
+if (!member) {
+return interaction.reply({
+content: "❌ Could not find that user in the server.",
+ephemeral: true
+});
+}
+
+if (member.id === interaction.user.id) {
+return interaction.reply({
+content: "❌ You cannot mute yourself.",
+ephemeral: true
+});
+}
 
 const minutes = interaction.options.getInteger('minutes');
 const reason = interaction.options.getString('reason') || "No reason provided";
-
 const duration = minutes * 60 * 1000;
+
+try {
 
 await member.timeout(duration, reason);
 
@@ -74,6 +89,15 @@ const logEmbed = new EmbedBuilder()
 
 logChannel.send({ embeds: [logEmbed] });
 
+}
+
+} catch (err) {
+console.error(err);
+
+interaction.reply({
+content: "❌ I couldn't mute that user. Check role hierarchy or permissions.",
+ephemeral: true
+});
 }
 
 }
