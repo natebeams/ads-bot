@@ -2,6 +2,8 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const checkPerms = require('../checkPerms');
 const fs = require('fs');
 
+const LOG_CHANNEL_ID = "1481114583543316511";
+
 module.exports = {
 data: new SlashCommandBuilder()
 .setName('adwarn')
@@ -38,6 +40,8 @@ db.adwarns[user.id]++;
 
 fs.writeFileSync('./database.json', JSON.stringify(db, null, 2));
 
+/* ---------- EMBED ---------- */
+
 const embed = new EmbedBuilder()
 .setColor("#ff2e2e")
 .setTitle("<:StaffBadgeRed:1481520734382719111> Klien Advertising Moderation Action")
@@ -51,10 +55,23 @@ const embed = new EmbedBuilder()
 .setFooter({ text: "If you wish to appeal this warning, Please open a ticket in support" })
 .setTimestamp();
 
+/* ---------- SEND IN COMMAND CHANNEL ---------- */
+
 await interaction.reply({
 content: `<@${user.id}>`,
 embeds: [embed]
 });
+
+/* ---------- SEND SAME MESSAGE TO LOG CHANNEL ---------- */
+
+const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+
+if (logChannel) {
+await logChannel.send({
+content: `<@${user.id}>`,
+embeds: [embed]
+});
+}
 
 }
 };
