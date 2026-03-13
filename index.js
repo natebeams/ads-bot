@@ -43,6 +43,17 @@ const adChannels = [
 "1481128656393732117"
 ];
 
+/* CHANNELS WHERE INVITES ARE BLOCKED */
+const inviteBlockedChannels = [
+"1481109520208888030",
+"1481113520127869049",
+"1481113594715312219"    
+/* ADD CHANNEL IDS HERE */
+];
+
+/* INVITE LINK REGEX */
+const inviteRegex = /(discord\.gg|discord\.com\/invite|discordapp\.com\/invite)/i;
+
 /* STORES LAST STICKY MESSAGE PER CHANNEL */
 const stickyMessages = {};
 
@@ -54,17 +65,40 @@ client.on('messageCreate', async message => {
 
     if (message.author.bot) return;
 
+    /* ---------- INVITE LINK AUTOMOD ---------- */
+
+    if (inviteBlockedChannels.includes(message.channel.id)) {
+
+        if (inviteRegex.test(message.content)) {
+
+            await message.delete().catch(() => {});
+
+            const embed = new EmbedBuilder()
+            .setColor("#ff0000")
+            .setTitle("🚫 Invite Links Not Allowed")
+            .setDescription(`${message.author}, invite links are not allowed in this channel.`)
+            .setTimestamp();
+
+            const warning = await message.channel.send({ embeds: [embed] });
+
+            setTimeout(() => warning.delete().catch(()=>{}), 5000);
+
+            return;
+        }
+
+    }
+
+    /* ---------- STICKY AD SYSTEM ---------- */
+
     if (!adChannels.includes(message.channel.id)) return;
 
     try {
 
-        /* DELETE OLD STICKY */
         if (stickyMessages[message.channel.id]) {
             const oldMsg = await message.channel.messages.fetch(stickyMessages[message.channel.id]).catch(() => null);
             if (oldMsg) await oldMsg.delete();
         }
 
-        /* CREATE NEW STICKY EMBED */
         const embed = new EmbedBuilder()
         .setColor("#0d1fe9")
         .setTitle("📢 Auto Ads Reminder")
