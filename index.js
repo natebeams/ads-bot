@@ -212,25 +212,40 @@ console.error("Delete log error:", err);
 
 client.on('messageUpdate', async (oldMessage, newMessage) => {
 
+try {
+
 if (!oldMessage.guild) return;
+
+/* FETCH PARTIALS */
+if (oldMessage.partial) await oldMessage.fetch();
+if (newMessage.partial) await newMessage.fetch();
+
+/* IGNORE BOT MESSAGES */
 if (oldMessage.author?.bot) return;
+
+/* IGNORE IF CONTENT DIDN'T CHANGE */
 if (oldMessage.content === newMessage.content) return;
 
 const logChannel = oldMessage.guild.channels.cache.get(MESSAGE_LOG_CHANNEL);
 if (!logChannel) return;
 
 const embed = new EmbedBuilder()
-.setColor("rgb(25, 0, 255)")
+.setColor("#ffaa00")
 .setTitle("✏️ Message Edited")
 .addFields(
 { name: "User", value: `<@${oldMessage.author.id}>`, inline: true },
 { name: "Channel", value: `<#${oldMessage.channel.id}>`, inline: true },
-{ name: "Before", value: oldMessage.content || "No text" },
-{ name: "After", value: newMessage.content || "No text" }
+{ name: "Before", value: oldMessage.content || "No text", inline: false },
+{ name: "After", value: newMessage.content || "No text", inline: false },
+{ name: "Jump to Message", value: `[Click Here](${newMessage.url})` }
 )
 .setTimestamp();
 
 logChannel.send({ embeds: [embed] });
+
+} catch (err) {
+console.error("Edit log error:", err);
+}
 
 });
 
