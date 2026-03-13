@@ -10,7 +10,8 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessageReactions
     ]
 });
 
@@ -182,7 +183,6 @@ client.on('interactionCreate', async interaction => {
 client.on('messageDelete', async message => {
 
 if (!message.guild) return;
-if (message.author?.bot) return;
 
 const logChannel = message.guild.channels.cache.get(MESSAGE_LOG_CHANNEL);
 if (!logChannel) return;
@@ -191,7 +191,6 @@ const embed = new EmbedBuilder()
 .setColor("#rgb(25, 0, 255)")
 .setTitle("🗑️ Message Deleted")
 .addFields(
-{ name: "User", value: `<@${message.author.id}>`, inline: true },
 { name: "Channel", value: `<#${message.channel.id}>`, inline: true },
 { name: "Content", value: message.content || "No text content" }
 )
@@ -200,6 +199,7 @@ const embed = new EmbedBuilder()
 logChannel.send({ embeds: [embed] });
 
 });
+
 
 client.on('messageUpdate', async (oldMessage, newMessage) => {
 
