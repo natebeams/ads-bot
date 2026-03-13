@@ -3,6 +3,7 @@ const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord
 const fs = require('fs');
 
 const MOD_LOG_CHANNEL = "1481114583543316511";
+const MESSAGE_LOG_CHANNEL = "1481881824979587093";
 
 const client = new Client({
     intents: [
@@ -47,8 +48,7 @@ const adChannels = [
 const inviteBlockedChannels = [
 "1481109520208888030",
 "1481113520127869049",
-"1481113594715312219"    
-/* ADD CHANNEL IDS HERE */
+"1481113594715312219"
 ];
 
 /* INVITE LINK REGEX */
@@ -174,6 +174,54 @@ client.on('interactionCreate', async interaction => {
         }
 
     }
+
+});
+
+/* ================= MESSAGE LOGGING ================= */
+
+client.on('messageDelete', async message => {
+
+if (!message.guild) return;
+if (message.author?.bot) return;
+
+const logChannel = message.guild.channels.cache.get(MESSAGE_LOG_CHANNEL);
+if (!logChannel) return;
+
+const embed = new EmbedBuilder()
+.setColor("#rgb(25, 0, 255)")
+.setTitle("🗑️ Message Deleted")
+.addFields(
+{ name: "User", value: `<@${message.author.id}>`, inline: true },
+{ name: "Channel", value: `<#${message.channel.id}>`, inline: true },
+{ name: "Content", value: message.content || "No text content" }
+)
+.setTimestamp();
+
+logChannel.send({ embeds: [embed] });
+
+});
+
+client.on('messageUpdate', async (oldMessage, newMessage) => {
+
+if (!oldMessage.guild) return;
+if (oldMessage.author?.bot) return;
+if (oldMessage.content === newMessage.content) return;
+
+const logChannel = oldMessage.guild.channels.cache.get(MESSAGE_LOG_CHANNEL);
+if (!logChannel) return;
+
+const embed = new EmbedBuilder()
+.setColor("rgb(25, 0, 255)")
+.setTitle("✏️ Message Edited")
+.addFields(
+{ name: "User", value: `<@${oldMessage.author.id}>`, inline: true },
+{ name: "Channel", value: `<#${oldMessage.channel.id}>`, inline: true },
+{ name: "Before", value: oldMessage.content || "No text" },
+{ name: "After", value: newMessage.content || "No text" }
+)
+.setTimestamp();
+
+logChannel.send({ embeds: [embed] });
 
 });
 
