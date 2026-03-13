@@ -180,7 +180,7 @@ client.on('interactionCreate', async interaction => {
 
 /* ================= MESSAGE LOGGING ================= */
 
-cclient.on('messageDelete', async message => {
+client.on('messageDelete', async message => {
 
 if (!message.guild) return;
 
