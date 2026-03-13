@@ -43,6 +43,9 @@ const adChannels = [
 "1481128656393732117"
 ];
 
+/* STORES LAST STICKY MESSAGE PER CHANNEL */
+const stickyMessages = {};
+
 client.once('ready', () => {
     console.log(`Bot online as ${client.user.tag}`);
 });
@@ -53,13 +56,28 @@ client.on('messageCreate', async message => {
 
     if (!adChannels.includes(message.channel.id)) return;
 
-    const embed = new EmbedBuilder()
-    .setColor("#5865F2")
-    .setTitle("📢 Auto Ads Reminder")
-    .setDescription("Post your **server ads below!**\nPlease follow the ad rules and avoid spamming.")
-    .setTimestamp();
+    try {
 
-    message.reply({ embeds: [embed] });
+        /* DELETE OLD STICKY */
+        if (stickyMessages[message.channel.id]) {
+            const oldMsg = await message.channel.messages.fetch(stickyMessages[message.channel.id]).catch(() => null);
+            if (oldMsg) await oldMsg.delete();
+        }
+
+        /* CREATE NEW STICKY EMBED */
+        const embed = new EmbedBuilder()
+        .setColor("#0d1fe9")
+        .setTitle("📢 Auto Ads Reminder")
+        .setDescription("Post your **server ads below!**\nPlease follow the ad rules and avoid spamming.")
+        .setTimestamp();
+
+        const sticky = await message.channel.send({ embeds: [embed] });
+
+        stickyMessages[message.channel.id] = sticky.id;
+
+    } catch (error) {
+        console.error("Sticky message error:", error);
+    }
 
 });
 
@@ -104,9 +122,9 @@ client.on('interactionCreate', async interaction => {
             });
 
             const embed = new EmbedBuilder()
-            .setColor("#2b2d31")
+            .setColor("#0050f1")
             .setTitle("🎫 Support Ticket")
-            .setDescription("Please explain your issue and a staff member will assist you shortly.")
+            .setDescription("Need assistance? Want to report a user? A staff member will assist you shortly.")
             .setTimestamp();
 
             await channel.send({
