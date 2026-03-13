@@ -10,9 +10,9 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessageReactions
-    ]
+        GatewayIntentBits.GuildMembers
+    ],
+    partials: ['MESSAGE', 'CHANNEL', 'REACTION']
 });
 
 client.commands = new Collection();
@@ -180,23 +180,32 @@ client.on('interactionCreate', async interaction => {
 
 /* ================= MESSAGE LOGGING ================= */
 
-client.on('messageDelete', async message => {
+cclient.on('messageDelete', async message => {
 
 if (!message.guild) return;
+
+try {
+
+if (message.partial) await message.fetch();
 
 const logChannel = message.guild.channels.cache.get(MESSAGE_LOG_CHANNEL);
 if (!logChannel) return;
 
 const embed = new EmbedBuilder()
-.setColor("#rgb(25, 0, 255)")
+.setColor("#ff0000")
 .setTitle("🗑️ Message Deleted")
 .addFields(
 { name: "Channel", value: `<#${message.channel.id}>`, inline: true },
+{ name: "User", value: message.author ? `<@${message.author.id}>` : "Unknown", inline: true },
 { name: "Content", value: message.content || "No text content" }
 )
 .setTimestamp();
 
 logChannel.send({ embeds: [embed] });
+
+} catch (err) {
+console.error("Delete log error:", err);
+}
 
 });
 
